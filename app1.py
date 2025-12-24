@@ -109,28 +109,18 @@ def logout():
 def generate():
     if "admin" not in session:
         return redirect("/")
-    subject = request.args.get('sub','')
-    branch = request.args.get('branch','')
-    expiry_dt = datetime.datetime.now() + datetime.timedelta(minutes=2)
-    expiry = expiry_dt.strftime("%H:%M")
-    expiry_ts = int(expiry_dt.timestamp())
+
+    IST = timezone(timedelta(hours=5, minutes=30))
+    now_ist = datetime.datetime.now(IST)
+
+    expiry_time = now_ist + datetime.timedelta(minutes=2)
+    expiry = expiry_time.strftime("%H:%M:%S")
+
     url = f"{request.host_url}scan?exp={expiry}"
-    if subject:
-        url += f"&sub={urllib.parse.quote_plus(subject)}"
-    if branch:
-        url += f"&branch={urllib.parse.quote_plus(branch)}"
+    img = qrcode.make(url)
+    img.save(get_static_path("qr.png"))
 
-    qr_ok = False
-    qr_error = None
-    try:
-        img = qrcode.make(url)
-        img.save(get_static_path("qr.png"))
-        qr_ok = True
-    except Exception as e:
-        qr_error = str(e)
-        qr_ok = False
-
-    return render_template("admin.html", qr=qr_ok, expiry=expiry, subject=subject, branch=branch, expiry_ts=expiry_ts, qr_error=qr_error)
+    return render_template("admin.html", qr=True, expiry=expiry)
 
 # ---------- SERVE QR IMAGE ----------
 @app.route("/static/qr.png")
@@ -405,4 +395,5 @@ def export():
     )
 
 if __name__ == "__main__":
+
     app.run(host="0.0.0.0", port=5000, debug=True)
