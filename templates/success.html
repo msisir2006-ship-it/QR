@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Marked Successfully</title>
+    <style>
+        :root {
+            --primary-teal: #1b8a9e;
+            --bg-color: #ffffff;
+            --anim-speed: 1.5s;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--bg-color);
+            overflow: hidden;
+            font-family: system-ui, -apple-system, Roboto, "Segoe UI", "Helvetica Neue", Arial;
+        }
+
+        .container {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            text-align: center;
+        }
+
+        /* --- Main Circle/Ring --- */
+        .main-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg); /* Start from top */
+        }
+
+        .loader-ring {
+            fill: none;
+            stroke: var(--primary-teal);
+            stroke-width: 7;
+            stroke-linecap: round;
+            stroke-dasharray: 283; /* Roughly 2 * PI * r */
+            stroke-dashoffset: 280; 
+            transform-origin: center;
+            animation: 
+                loading-spin var(--anim-speed) ease-in-out forwards,
+                fill-background 0.3s ease-in forwards var(--anim-speed);
+        }
+
+        /* --- Checkmark --- */
+        .checkmark {
+            fill: none;
+            stroke: white;
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 60;
+            stroke-dashoffset: 60;
+            /* Starts after the ring fills */
+            animation: draw-check 0.4s ease-out forwards calc(var(--anim-speed) + 0.2s);
+        }
+
+        /* --- Confetti Burst + Sparkles + Twirls --- */
+        .confetti-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 1px;
+            height: 1px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Basic tiny confetti particles */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            opacity: 0;
+            border-radius: 2px;
+            transform-origin: center;
+        }
+
+        /* Paper twirl ribbons */
+        .twirl {
+            position: absolute;
+            width: 8px;
+            height: 28px;
+            border-radius: 3px;
+            opacity: 0;
+            transform-origin: center;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.06) inset;
+        }
+        .t1 { background: #ffcc80; animation: twirl-1 0.95s cubic-bezier(.25,.8,.25,1) forwards calc(var(--anim-speed) + 0.25s); }
+        .t2 { background: #ffe082; animation: twirl-2 0.95s cubic-bezier(.25,.8,.25,1) forwards calc(var(--anim-speed) + 0.25s); }
+        .t3 { background: #b39ddb; animation: twirl-3 0.95s cubic-bezier(.25,.8,.25,1) forwards calc(var(--anim-speed) + 0.25s); }
+        .t4 { background: #80deea; animation: twirl-4 0.95s cubic-bezier(.25,.8,.25,1) forwards calc(var(--anim-speed) + 0.25s); }
+
+        @keyframes twirl-1 { 0% { opacity:1; transform: translate(0,0) rotate(0deg); } 60% { opacity:1; transform: translate(-10px,-40px) rotate(220deg); } 100% { opacity:0; transform: translate(-38px,-95px) rotate(720deg); } }
+        @keyframes twirl-2 { 0% { opacity:1; transform: translate(0,0) rotate(0deg); } 60% { opacity:1; transform: translate(10px,-40px) rotate(-200deg); } 100% { opacity:0; transform: translate(40px,-100px) rotate(-680deg); } }
+        @keyframes twirl-3 { 0% { opacity:1; transform: translate(0,0) rotate(0deg); } 60% { opacity:1; transform: translate(18px,-10px) rotate(160deg); } 100% { opacity:0; transform: translate(64px,22px) rotate(560deg); } }
+        @keyframes twirl-4 { 0% { opacity:1; transform: translate(0,0) rotate(0deg); } 60% { opacity:1; transform: translate(-18px,-10px) rotate(-160deg); } 100% { opacity:0; transform: translate(-52px,26px) rotate(-560deg); } }
+
+        /* Sparkles (small glowing bursts) */
+        .sparkle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff 0 20%, rgba(255,255,255,0.8) 21%, transparent 60%), radial-gradient(circle at 70% 70%, rgba(255,255,255,0.6) 0 30%, transparent 60%);
+            box-shadow: 0 0 6px rgba(255,255,255,0.9);
+            opacity: 0;
+            transform: scale(0.6);
+            animation: sparkle 0.9s ease-out forwards calc(var(--anim-speed) + 0.2s);
+        }
+        @keyframes sparkle { 0% { opacity:1; transform: scale(0.2) translate(0,0) } 60% { opacity:1; transform: scale(1.1) } 100% { opacity:0; transform: scale(1.4) translate(30px,-70px) } }
+
+        /* Keyframes */
+        @keyframes loading-spin {
+            0% { stroke-dashoffset: 280; transform: rotate(0deg); }
+            50% { stroke-dashoffset: 100; transform: rotate(180deg); }
+            100% { stroke-dashoffset: 280; transform: rotate(720deg); }
+        }
+
+        @keyframes fill-background {
+            to {
+                fill: var(--primary-teal);
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes draw-check {
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Confetti Individual Animations */
+        .p1 { background: #f44336; animation: p1-burst 0.7s ease-out forwards calc(var(--anim-speed) + 0.3s); }
+        .p2 { background: #ffeb3b; animation: p2-burst 0.7s ease-out forwards calc(var(--anim-speed) + 0.3s); }
+        .p3 { background: #2196f3; animation: p3-burst 0.7s ease-out forwards calc(var(--anim-speed) + 0.3s); }
+        .p4 { background: #e91e63; animation: p4-burst 0.7s ease-out forwards calc(var(--anim-speed) + 0.3s); }
+        .p5 { background: #4caf50; animation: p5-burst 0.7s ease-out forwards calc(var(--anim-speed) + 0.3s); }
+        .p6 { background: #ff9800; animation: p6-burst 0.7s ease-out forwards calc(var(--anim-speed) + 0.3s); }
+
+        @keyframes p1-burst { 0% { opacity: 1; transform: translate(0,0); } 100% { opacity: 0; transform: translate(-40px, -50px) rotate(45deg); } }
+        @keyframes p2-burst { 0% { opacity: 1; transform: translate(0,0); } 100% { opacity: 0; transform: translate(40px, -50px) rotate(-45deg); } }
+        @keyframes p3-burst { 0% { opacity: 1; transform: translate(0,0); } 100% { opacity: 0; transform: translate(55px, 10px) rotate(110deg); } }
+        @keyframes p4-burst { 0% { opacity: 1; transform: translate(0,0); } 100% { opacity: 0; transform: translate(-55px, 10px) rotate(-110deg); } }
+        @keyframes p5-burst { 0% { opacity: 1; transform: translate(0,0); } 100% { opacity: 0; transform: translate(20px, 60px) rotate(20deg); } }
+        @keyframes p6-burst { 0% { opacity: 1; transform: translate(0,0); } 100% { opacity: 0; transform: translate(-20px, 60px) rotate(-20deg); } }
+
+        .message {
+            margin-top: 12px;
+            font-weight: 600;
+            color: #222;
+            font-size: 14px;
+        }
+
+        .countdown {
+            margin-top: 8px;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" role="status" aria-live="polite">
+        <svg class="main-svg" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="loader-ring" cx="50" cy="50" r="45" />
+            <path class="checkmark" d="M32 52 l12 12 l24 -26" transform="rotate(90 50 50)" />
+        </svg>
+
+        <div class="confetti-wrapper">
+            <!-- classic confetti particles -->
+            <div class="particle p1" style="left:-10px;top:-12px"></div>
+            <div class="particle p2" style="left:12px;top:-18px;width:10px;height:6px;border-radius:2px"></div>
+            <div class="particle p3" style="left:40px;top:6px"></div>
+            <div class="particle p4" style="left:-38px;top:8px"></div>
+            <div class="particle p5" style="left:18px;top:58px"></div>
+            <div class="particle p6" style="left:-22px;top:56px"></div>
+
+            <!-- paper twirls -->
+            <div class="twirl t1" style="left:-6px;top:-6px"></div>
+            <div class="twirl t2" style="left:8px;top:-10px"></div>
+            <div class="twirl t3" style="left:28px;top:4px"></div>
+            <div class="twirl t4" style="left:-30px;top:6px"></div>
+
+            <!-- sparkles -->
+            <div class="sparkle s1" style="left:-4px;top:-28px"></div>
+            <div class="sparkle s2" style="left:16px;top:-36px;width:6px;height:6px"></div>
+            <div class="sparkle s3" style="left:36px;top:-2px;width:6px;height:6px"></div>
+            <div class="sparkle s4" style="left:-36px;top:12px;width:5px;height:5px"></div>
+        </div>
+
+        <div class="message">✅ Attendance Marked Successfully</div>
+        <div class="countdown" aria-hidden="true">Returning in <span id="count">6</span>s</div>
+    </div>
+
+    <script>
+        // Show countdown and redirect after delay (6s)
+        (function(){
+            var delay = 6; // seconds
+            var countEl = document.getElementById("count");
+            if(countEl) countEl.textContent = delay;
+            var remaining = delay;
+            var iv = setInterval(function(){
+                remaining -= 1;
+                if(countEl) countEl.textContent = remaining > 0 ? remaining : 0;
+                if(remaining <= 0) clearInterval(iv);
+            }, 1000);
+            setTimeout(function(){ window.location.href = "{{ url_for('scan') }}"; }, delay * 1000);
+        })();
+    </script>
+</body>
+</html>

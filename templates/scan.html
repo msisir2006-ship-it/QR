@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Attendance</title>
+
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url("{{ url_for('static', filename='bg3.jpeg') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #f8eaf0; /* soft fallback color */
+            color: #fff; /* default text color on page */
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            width: 320px;
+            max-width: 90vw;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            color: #070909;
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #2bdcff;
+            border: none;
+            border-radius: 6px;
+            color: rgb(19, 9, 9);
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #357bd8;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 420px) {
+            .card {
+                padding: 18px;
+                width: 90%;
+            }
+            .card h2 {
+                font-size: 1.2rem;
+            }
+            input, button {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h2>Student Attendance Portal</h2>
+        <h4>Enter Details For Attendance</h4>
+
+        {% if request.args.get('sub') %}
+            <p style="margin-bottom:12px;color:#333;">Subject: <strong>{{ request.args.get('sub') }}</strong></p>
+        {% endif %}
+
+        <form id="attForm" method="POST" action="/scan{% if request.args.get('exp') %}?exp={{ request.args.get('exp') }}{% endif %}{% if request.args.get('sub') %}&sub={{ request.args.get('sub') }}{% endif %}" onsubmit="return validateAndSubmit();">
+            <input type="text" id="roll" name="roll" placeholder="Roll Number">
+            <input type="text" id="name" name="name" placeholder="Student Name">
+            {% if request.args.get('sub') %}
+                <input type="hidden" name="subject" value="{{ request.args.get('sub') }}">
+            {% endif %}
+            <button type="submit">Submit Attendance</button>
+        </form>
+    </div>
+
+    <script>
+        function validateAndSubmit() {
+            const roll = document.getElementById("roll").value.trim();
+            const name = document.getElementById("name").value.trim();
+            if (!roll || !name) {
+                alert("Please fill all fields");
+                return false;
+            }
+            // Optionally show a quick message while submitting
+            return true; // allow form to submit to server
+        }
+    </script>
+
+</body>
+</html>

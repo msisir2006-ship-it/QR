@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+
+    <!-- Embedded CSS -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image: url('/static/pinkbg.jpeg');
+
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* subtle decorative DB image (low opacity, non-interactive) */
+        body::after {
+            content: '';
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: 220px;
+            height: 220px;
+            background: url('/static/pinkbg.jpeg') no-repeat center/contain;
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @media (max-width: 520px) {
+            body::after { display: none; }        }
+
+        .college-name {
+            margin-bottom: 18px;
+            font-size: 18px;
+            letter-spacing: 1px;
+            color: #222;
+            text-transform: uppercase;
+        }
+
+        .dashboard-card {
+            background: #ffffff;
+            padding: 30px 34px;
+            width: 420px;
+            max-width: 95%;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+            text-align: center;
+            position: relative;
+        }
+
+        .dashboard-card h2 {
+            margin-bottom: 6px;
+            color: #222;
+            font-size: 22px;
+        }
+
+        .subtitle {
+            margin-bottom: 18px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .logout-link {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 13px;
+            color: #6b7280;
+            text-decoration: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .logout-link:hover { background: rgba(0,0,0,0.04); color: #111; }
+
+        .dashboard-card .action {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(180deg,#ef4444,#d32f2f);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: filter 0.15s ease, transform 0.12s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .dashboard-card .action:hover {
+            filter: brightness(0.95);
+            transform: translateY(-2px);
+        }
+
+        /* Subject select + generate layout */
+        .generate-row { display:flex; flex-direction: column; gap:10px; align-items:stretch; margin-bottom:6px; }
+        .subject-select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-weight: 600;
+            background: #fff;
+            color: #222;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .generate-row .generate-btn { width: 100%; }
+
+        .qr-box { margin-top: 18px; position: relative; }
+        .qr-img { width: 200px; height: 200px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.12); transition: filter .2s, opacity .2s; }
+        .qr-img.expired { filter: grayscale(60%); opacity: 0.6; }
+        .qr-expired-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.85); color:#c33; font-weight:700; border-radius:8px; font-size:16px; }
+        .expiry { margin-top: 8px; color: #555; font-size: 14px; }
+
+        @media (max-width: 420px) {
+            .dashboard-card { padding: 20px; }
+            .qr-img { width: 160px; height: 160px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="college-name">CHAITANYA ENGINEERING COLLEGE</h1>
+
+    <div class="dashboard-card">
+        <a href="/logout" class="logout-link">Logout</a>
+        <h2>Admin Dashboard</h2>
+        <p class="subtitle">Generate QR &amp; manage attendance</p>
+
+        {% if added == '1' %}
+        <div style="background:#d4edda;color:#155724;padding:8px;border-radius:4px;margin-bottom:12px;">✅ Attendance added successfully.</div>
+        {% elif added == 'exists' %}
+        <div style="background:#fff3cd;color:#856404;padding:8px;border-radius:4px;margin-bottom:12px;">⚠️ Attendance already marked for this roll on that date.</div>
+        {% elif added == 'error' %}
+        <div style="background:#f8d7da;color:#721c24;padding:8px;border-radius:4px;margin-bottom:12px;">⚠️ Please provide both Roll and Name.</div>
+        {% endif %}
+
+        <div class="generate-row">
+            <select id="branch" class="subject-select" aria-label="Select branch">
+                <option value="">— Select Branch —</option>
+                <option value="CAI">CAI</option>
+                <option value="CSM">CSM</option>
+                <option value="CSD">CSD</option>
+                <option value="CSE-A">CSE-A</option>
+                <option value="CSE-B">CSE-B</option>
+                <option value="CSE-C">CSE-C</option>
+                <option value="CSE-D">CSE-D</option>
+                <option value="MECH">MECH</option>
+                <option value="EEE">EEE</option>
+                <option value="ECE">ECE</option>
+                <option value="CIVIL">CIVIL</option>
+            </select>
+            <select id="subject" class="subject-select" aria-label="Select subject">
+                <option value="">— Select Subject —</option>
+                <option value="ML">ML</option>
+                <option value="DBMS">DBMS</option>
+                <option value="DLCO">DLCO</option>
+                <option value="P and S">P and S</option>
+                <option value="MEFA">MEFA</option>
+                <option value="ML LAB">ML LAB</option>
+                <option value="DBMS LAB">DBMS LAB</option>
+                <option value="FULL STACK LAB">FULL STACK LAB</option>
+                <option value="DT and I LAB">DT and I LAB</option>
+            </select>
+
+            <a class="action generate-btn" href="#" onclick="generateWithSubject(event)">Generate QR</a>
+        </div>
+
+        <a class="action" href="/view">View Attendance</a>
+        <a class="action" href="/export">Export CSV</a>
+
+        <button type="button" id="manualToggle" class="action" title="Enter attendance manually" aria-label="Add attendance manually" aria-expanded="false" aria-controls="manualForm" data-action="manual-toggle">Add Attendance Manually</button>
+
+        <!-- Inline manual attendance form (hidden by default) -->
+        <form id="manualForm" method="post" action="/manual_add" style="display:none;margin-top:18px;padding:15px;border-radius:8px;border:1px solid #eee;background:#fafafa;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                <input name="roll" placeholder="Roll" style="padding:8px;border-radius:4px;border:1px solid #ccc;min-width:120px;" required>
+                <input name="name" placeholder="Name" style="padding:8px;border-radius:4px;border:1px solid #ccc;min-width:160px;" required>
+                <select name="subject" style="padding:8px;border-radius:4px;border:1px solid #ccc;min-width:140px;">
+                    <option value="">-- Subject (optional) --</option>
+                    <option value="ML">ML</option>
+                    <option value="DBMS">DBMS</option>
+                    <option value="DLCO">DLCO</option>
+                    <option value="P and S">P and S</option>
+                    <option value="MEFA">MEFA</option>
+                    <option value="ML LAB">ML LAB</option>
+                    <option value="DBMS LAB">DBMS LAB</option>
+                    <option value="FULL STACK LAB">FULL STACK LAB</option>
+                    <option value="DT and I LAB">DT and I LAB</option>
+                </select>
+                <select name="branch" style="padding:8px;border-radius:4px;border:1px solid #ccc;min-width:140px;">
+                    <option value="">-- Branch (optional) --</option>
+                    <option value="CAI">CAI</option>
+                    <option value="CSM">CSM</option>
+                    <option value="CSD">CSD</option>
+                    <option value="CSE-A">CSE-A</option>
+                    <option value="CSE-B">CSE-B</option>
+                    <option value="CSE-C">CSE-C</option>
+                    <option value="CSE-D">CSE-D</option>
+                    <option value="MECH">MECH</option>
+                    <option value="EEE">EEE</option>
+                    <option value="ECE">ECE</option>
+                    <option value="CIVIL">CIVIL</option>
+                </select>
+                <input type="date" name="date" style="padding:8px;border-radius:4px;border:1px solid #ccc;" />
+                <input type="time" name="time" style="padding:8px;border-radius:4px;border:1px solid #ccc;" />
+                <button type="submit" class="action" style="padding:8px 12px;">Add</button>
+                <button type="button" id="manualCancel" class="action" style="padding:8px 12px;background:#eee;color:#333;">Cancel</button>
+            </div>
+        </form>
+
+        {% if qr %}
+        <div class="qr-box">
+            <img src="{{ url_for('static', filename='qr.png') }}" alt="QR Code" class="qr-img">
+            <p class="expiry">Expires at <strong>{{ expiry }}</strong></p>
+            {% if subject %}
+            <p class="expiry">Subject: <strong>{{ subject }}</strong></p>
+            {% endif %}
+            {% if branch %}
+            <p class="expiry">Branch: <strong>{{ branch }}</strong></p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // keep helper functions for compatibility
+        function generateQR() { window.location.href = '/generate'; }
+        function viewAttendance() { window.location.href = '/view'; }
+        function exportCSV() { window.location.href = '/export'; }
+
+        function generateWithSubject(e) {
+            e && e.preventDefault();
+            const branch = document.getElementById('branch').value;
+            const sub = document.getElementById('subject').value;
+            let url = '/generate';
+            if (branch) url += '?branch=' + encodeURIComponent(branch);
+            if (sub) url += (url.includes('?') ? '&' : '?') + 'sub=' + encodeURIComponent(sub);
+            window.location.href = url;
+        }
+
+        // Manual add form toggle and defaults
+        (function(){
+            var toggle = document.getElementById('manualToggle');
+            var form = document.getElementById('manualForm');
+            var cancel = document.getElementById('manualCancel');
+            if(!toggle || !form) return;
+            toggle.addEventListener('click', function(){
+                // determine if we are opening (form currently hidden) or closing it
+                var opened = (form.style.display === 'none' || form.style.display === '');
+                form.style.display = opened ? 'block' : 'none';
+                toggle.setAttribute('aria-expanded', opened ? 'true' : 'false');
+                // set defaults when shown
+                if(opened){
+                    var dateInput = form.querySelector('input[name="date"]');
+                    var timeInput = form.querySelector('input[name="time"]');
+                    var now = new Date();
+                    if(dateInput && !dateInput.value){
+                        var y = now.getFullYear();
+                        var m = ("0" + (now.getMonth()+1)).slice(-2);
+                        var d = ("0" + now.getDate()).slice(-2);
+                        dateInput.value = `${y}-${m}-${d}`;
+                    }
+                    if(timeInput && !timeInput.value){
+                        var hh = ("0" + now.getHours()).slice(-2);
+                        var mm = ("0" + now.getMinutes()).slice(-2);
+                        timeInput.value = `${hh}:${mm}`;
+                    }
+                }
+            });
+            cancel && cancel.addEventListener('click', function(){ form.style.display='none'; toggle.setAttribute('aria-expanded','false'); toggle.focus(); });
+        })();
+    </script>
+
+</body>
+</html>
