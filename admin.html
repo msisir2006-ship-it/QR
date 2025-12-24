@@ -1,0 +1,14 @@
+<link rel="stylesheet" href="/static/style.css">
+
+<div class="container">
+    <h2>Admin Dashboard</h2>
+
+    <a href="/generate"><button>Generate QR</button></a><br><br>
+    <a href="/view"><button>View Attendance</button></a><br><br>
+    <a href="/export"><button>Export CSV</button></a>
+
+    {% if qr %}
+        <p><b>QR Expires at:</b> {{ expiry }}</p>
+        <img src="/static/qr.png" class="qr-img" width="200">
+    {% endif %}
+</div>
